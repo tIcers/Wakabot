@@ -82,6 +82,8 @@ async def before_update_status():
     
 if __name__ == '__main__':
     bot.run(BOT_TOKEN)
+    loop = asyncio.get_event_loop()
     while True:
-        schedule.run_pending()
-        py_time.sleep(1)
+        loop.run_until_complete(schedule.run_pending())
+        loop.run_until_complete(asyncio.sleep(1))
+
