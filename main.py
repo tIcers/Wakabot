@@ -3,28 +3,21 @@ import pytz
 import asyncio
 import aiohttp
 import random
-import ssl
-import certifi
-import schedule
 import os
+import schedule
+import asyncio
 from dotenv import load_dotenv
-from datetime import datetime, date, timedelta
+from datetime import datetime
 from discord.ext import commands, tasks
 import time as py_time
 
 load_dotenv()
 
 BOT_TOKEN = os.getenv('TOKEN')
-CHANNEL_ID= os.getenv('CHANNEL_ID')
-WAKACHAN= os.getenv('WAKACHAN')
-
-aiohttp.TCPConnector.ssl = False
-
-os.environ['SSL_CERT_FILE'] = certifi.where()
+CHANNEL_ID = int(os.getenv('CHANNEL_ID'))  # Convert to an integer
+WAKACHAN = int(os.getenv('WAKACHAN'))  # Convert to an integer
 
 intents = discord.Intents.all()
-
-
 bot = commands.Bot(command_prefix='!', intents=intents)
 async def make_request():
     async with aiohttp.ClientSession() as session:
@@ -44,32 +37,30 @@ async def on_ready():
     send_daily_random_number.start()
     schedule.every().day.at("18:00").do(send_daily_random_number)
 
-
 @bot.command()
 async def time(ctx, timezone_str):
     try:
         local_time = get_local_time(timezone_str)
-        await ctx.send(f'Local time in {timezone_str}:{local_time}')
+        await ctx.send(f'Local time in {timezone_str}: {local_time}')
     except pytz.UnknownTimeZoneError:
         await ctx.send('Invalid timezone. Please use a valid timezone')
 
 @tasks.loop(hours=24)
 async def send_daily_random_number():
     print("...send_daily_random_number method...")
-    japan_tz =pytz.timezone('Asia/Tokyo')
+    japan_tz = pytz.timezone('Asia/Tokyo')
     current_time = datetime.now(japan_tz)
     formatted_time = current_time.strftime('%m/%d: %H:%M')
     if current_time.hour == 18 and 0 <= current_time.minute <= 5:
         channel = bot.get_channel(CHANNEL_ID)
         if channel:
-            number = random.randint(1,10) * 100
+            number = random.randint(1, 10) * 100
             wakachan = bot.get_user(WAKACHAN)
             await channel.send(f'{wakachan.mention}, {formatted_time} Time to save ¥{number}!')
 
 @send_daily_random_number.before_loop
 async def before_send_daily_random_number():
     await bot.wait_until_ready()
-    await asyncio.sleep(0)
 
 @tasks.loop(seconds=1)
 async def update_status():
@@ -79,13 +70,12 @@ async def update_status():
 @update_status.before_loop
 async def before_update_status():
     await bot.wait_until_ready()
-    
-if __name__ == '__main__':
+
+async def main_loop():
     bot.run(BOT_TOKEN)
-    loop = asyncio.get_event_loop()
     while True:
         schedule.run_pending()
-        asyncio.run(asyncio.sleep(1))
+        await asyncio.sleep(1)
 
-
-
+if __name__ == '__main__':
+    asyncio.run(main_loop())
