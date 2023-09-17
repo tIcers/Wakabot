@@ -3,22 +3,28 @@ import pytz
 import asyncio
 import aiohttp
 import random
-import os
+import ssl
+import certifi
 import schedule
-import asyncio
+import os
 from dotenv import load_dotenv
-from datetime import datetime
+from datetime import datetime, date, timedelta
 from discord.ext import commands, tasks
-import time as py_time
 
 load_dotenv()
 
 BOT_TOKEN = os.getenv('TOKEN')
-CHANNEL_ID = int(os.getenv('CHANNEL_ID'))  # Convert to an integer
-WAKACHAN = int(os.getenv('WAKACHAN'))  # Convert to an integer
+CHANNEL_ID = os.getenv('CHANNEL_ID')
+WAKACHAN = os.getenv('WAKACHAN')
+
+aiohttp.TCPConnector.ssl = False
+
+os.environ['SSL_CERT_FILE'] = certifi.where()
 
 intents = discord.Intents.all()
+
 bot = commands.Bot(command_prefix='!', intents=intents)
+
 async def make_request():
     async with aiohttp.ClientSession() as session:
         async with session.get('https://discord.com') as response:
@@ -41,7 +47,7 @@ async def on_ready():
 async def time(ctx, timezone_str):
     try:
         local_time = get_local_time(timezone_str)
-        await ctx.send(f'Local time in {timezone_str}: {local_time}')
+        await ctx.send(f'Local time in {timezone_str}:{local_time}')
     except pytz.UnknownTimeZoneError:
         await ctx.send('Invalid timezone. Please use a valid timezone')
 
@@ -61,6 +67,7 @@ async def send_daily_random_number():
 @send_daily_random_number.before_loop
 async def before_send_daily_random_number():
     await bot.wait_until_ready()
+    await asyncio.sleep(0)
 
 @tasks.loop(seconds=1)
 async def update_status():
@@ -71,11 +78,5 @@ async def update_status():
 async def before_update_status():
     await bot.wait_until_ready()
 
-async def main_loop():
-    bot.run(BOT_TOKEN)
-    while True:
-        schedule.run_pending()
-        await asyncio.sleep(1)
-
 if __name__ == '__main__':
-    asyncio.run(main_loop())
+    bot.run(BOT_TOKEN)
