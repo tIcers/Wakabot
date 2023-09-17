@@ -10,6 +10,7 @@ import os
 from dotenv import load_dotenv
 from datetime import datetime, date, timedelta
 from discord.ext import commands, tasks
+import time as py_time
 
 load_dotenv()
 
@@ -83,4 +84,4 @@ if __name__ == '__main__':
     bot.run(BOT_TOKEN)
     while True:
         schedule.run_pending()
-        time.sleep(1)
+        py_time.sleep(1)
