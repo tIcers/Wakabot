@@ -59,7 +59,7 @@ async def send_daily_random_number():
     japan_tz =pytz.timezone('Asia/Tokyo')
     current_time = datetime.now(japan_tz)
     formatted_time = current_time.strftime('%m/%d: %H:%M')
-    if current_time.hour == 18 and current_time.minute >= 0 and current_time.minute <= 5:
+    if current_time.hour == 18 and 0 <= current_time.minute <= 5:
         channel = bot.get_channel(CHANNEL_ID)
         if channel:
             number = random.randint(1,10) * 100
@@ -84,6 +84,7 @@ if __name__ == '__main__':
     bot.run(BOT_TOKEN)
     loop = asyncio.get_event_loop()
     while True:
-        loop.run_until_complete(schedule.run_pending())
+        schedule.run_pending()
         loop.run_until_complete(asyncio.sleep(1))
+
 
