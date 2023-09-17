@@ -7,9 +7,12 @@ import ssl
 import certifi
 import schedule
 import os
-
+from dotenv import load_dotenv
 from datetime import datetime, date, timedelta
 from discord.ext import commands, tasks
+
+load_dotenv()
+
 BOT_TOKEN = os.getenv('TOKEN')
 CHANNEL_ID= os.getenv('CHANNEL_ID')
 WAKACHAN= os.getenv('WAKACHAN')
