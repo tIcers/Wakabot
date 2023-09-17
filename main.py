@@ -85,6 +85,7 @@ if __name__ == '__main__':
     loop = asyncio.get_event_loop()
     while True:
         schedule.run_pending()
-        loop.run_until_complete(asyncio.sleep(1))
+        asyncio.run(asyncio.sleep(1))
+
 
 
