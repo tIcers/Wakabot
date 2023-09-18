@@ -7,15 +7,17 @@ import ssl
 import certifi
 import schedule
 import os
+import time as py_time
 from dotenv import load_dotenv
 from datetime import datetime, date, timedelta
 from discord.ext import commands, tasks
 
 load_dotenv()
 
+WAKACHAN=1100773835155968161
+CHANNEL_ID = 1152878747331067914
 BOT_TOKEN = os.getenv('TOKEN')
-CHANNEL_ID = os.getenv('CHANNEL_ID')
-WAKACHAN = os.getenv('WAKACHAN')
+
 
 aiohttp.TCPConnector.ssl = False
 
@@ -80,3 +82,6 @@ async def before_update_status():
 
 if __name__ == '__main__':
     bot.run(BOT_TOKEN)
+    while True:
+        schedule.run_pending()
+        py_time.sleep(1)
