@@ -43,7 +43,6 @@ async def on_ready():
     print(f"Logged in as {bot.user.name}")
     update_status.start()
     send_daily_random_number.start()
-    schedule.every().day.at("18:00").do(send_daily_random_number)
 
 @bot.command()
 async def time(ctx, timezone_str):
@@ -66,19 +65,10 @@ async def send_daily_random_number():
             wakachan = bot.get_user(WAKACHAN)
             await channel.send(f'{wakachan.mention}, {formatted_time} Time to save ¥{number}!')
 
-@send_daily_random_number.before_loop
-async def before_send_daily_random_number():
-    await bot.wait_until_ready()
-    await asyncio.sleep(0)
-
 @tasks.loop(seconds=1)
 async def update_status():
     vancouver_time = get_local_time('America/Vancouver')
     await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=f'Vancouver: {vancouver_time}'))
-
-@update_status.before_loop
-async def before_update_status():
-    await bot.wait_until_ready()
 
 if __name__ == '__main__':
     bot.run(BOT_TOKEN)
