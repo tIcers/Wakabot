@@ -82,6 +82,3 @@ async def before_update_status():
 
 if __name__ == '__main__':
     bot.run(BOT_TOKEN)
-    while True:
-        schedule.run_pending()
-        py_time.sleep(1)
