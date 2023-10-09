@@ -74,7 +74,7 @@ async def before_send_daily_random_number():
 @tasks.loop(seconds=1)
 async def update_status():
     vancouver_time = get_local_time('America/Vancouver')
-    await bot.change_presence(activity=discord.Game(name=f'Vancouver: {vancouver_time}'))
+    await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=f'Vancouver: {vancouver_time}'))
 
 @update_status.before_loop
 async def before_update_status():
