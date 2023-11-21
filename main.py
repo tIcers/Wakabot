@@ -54,16 +54,25 @@ async def time(ctx, timezone_str):
 
 @tasks.loop(hours=24)
 async def send_daily_random_number():
-    print("...send_daily_random_number method...")
+    print("Task started: send_daily_random_number")
     japan_tz = pytz.timezone('Asia/Tokyo')
     current_time = datetime.now(japan_tz)
     formatted_time = current_time.strftime('%m/%d: %H:%M')
-    if current_time.hour == 20 and 0 <= current_time.minute <= 5:
+    print(f"Current time in Japan: {formatted_time}")
+    if current_time.hour == 20:
+        print("It's time to send the message")
         channel = bot.get_channel(CHANNEL_ID)
         if channel:
-            number = random.randint(1, 10) * 100
-            wakachan = bot.get_user(WAKACHAN)
-            await channel.send(f'{wakachan.mention}, {formatted_time} Time to save ¥{number}!')
+            try:
+                number = random.randint(1, 10) * 100
+                wakachan = bot.get_user(WAKACHAN)
+                await channel.send(f'{wakachan.mention}, {formatted_time} Time to save ¥{number}!')
+                print("Message sent successfully")
+            except Exception as e:
+                print(f"Error sending message:{e}")
+        else:
+            print(f"Channel with ID {CHANNEL_ID} not found")
+
 
 @tasks.loop(seconds=1)
 async def update_status():
