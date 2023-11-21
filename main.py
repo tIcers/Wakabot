@@ -42,7 +42,7 @@ def get_local_time(timezone_str):
 async def on_ready():
     print(f"Logged in as {bot.user.name}")
     update_status.start()
-    send_daily_random_number.start()
+    await schedule_daily_task()
 
 @bot.command()
 async def time(ctx, timezone_str):
@@ -72,6 +72,17 @@ async def send_daily_random_number():
                 print(f"Error sending message:{e}")
         else:
             print(f"Channel with ID {CHANNEL_ID} not found")
+
+async def schedule_daily_task():
+    japan_tz = pytz.timezone('Asia/Tokyo')
+    now = datetime.now(japan_tz)
+    next_run = now.replace(hour=20, minute=0, second=0, microsecond=0)
+    if now.hour >= 20:
+        next_run += timedelta(days=1)  
+    delay_seconds = (next_run - now).total_seconds()
+    await asyncio.sleep(delay_seconds)
+    send_daily_random_number.start()
+    
 
 
 @tasks.loop(seconds=1)
