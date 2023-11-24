@@ -7,10 +7,12 @@ import ssl
 import certifi
 import schedule
 import os
+import sqlite3
 import time as py_time
 from dotenv import load_dotenv
 from datetime import datetime, date, timedelta
 from discord.ext import commands, tasks
+
 
 load_dotenv()
 
@@ -33,6 +35,16 @@ async def make_request():
             print("...make_request method...")
             await response.text()
 
+def init_db(starting_amount= 2500):
+    conn = sqlite3.connect('savings.db')
+    cursor = conn.cursor() 
+    cursor.execute('''CREATE TABLE IF NOT EXISTS total_savings (total_amount INTEGER)''')
+    cursor.execute('INSERT INTO total_savings (total_amount) SELECT ? WHERE NOT EXISTS (SELECT 1 FROM total_savings)', (starting_amount,))
+    conn.commit()
+    conn.close()
+
+init_db()
+
 def get_local_time(timezone_str):
     tz = pytz.timezone(timezone_str)
     local_time = datetime.now(tz)
@@ -52,6 +64,16 @@ async def time(ctx, timezone_str):
     except pytz.UnknownTimeZoneError:
         await ctx.send('Invalid timezone. Please use a valid timezone')
 
+@bot.command()
+async def total(ctx):
+    connection= sqlite3.connect('savings.db')
+    cursor = connection.cursor()
+    cursor.execute("SELECT total_amount FROM total_savings")
+    total_saved = cursor.fetchone()[0]
+    connection.close()
+    await ctx.send(f'Total amount saved: ￥{total_saved}')
+
+
 @tasks.loop(hours=24)
 async def send_daily_random_number():
     print("Task started: send_daily_random_number")
@@ -65,6 +87,11 @@ async def send_daily_random_number():
         if channel:
             try:
                 number = random.randint(1, 10) * 100
+                conn = sqlite3.connect('savings.db')
+                c = conn.cursor()
+                c.execute("UPDATE total_savings SET total_amount = total_savings + ?",(number,))
+                conn.commit()
+                conn.close()
                 wakachan = bot.get_user(WAKACHAN)
                 await channel.send(f'{wakachan.mention}, {formatted_time} Time to save ¥{number}!')
                 print("Message sent successfully")
